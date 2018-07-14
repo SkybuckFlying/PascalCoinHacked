@@ -73,7 +73,7 @@ Type
   TAccount = Record
     account: Cardinal;        // FIXED value. Account number
     accountInfo : TAccountInfo;
-    balance: UInt64;          // Balance, always >= 0
+	balance: UInt64;          // Balance, always >= 0
     updated_block: Cardinal;  // Number of block where was updated
     n_operation: Cardinal;    // count number of owner operations (when receive, this is not updated)
     name : TRawBytes;         // Protocol 2. Unique name
@@ -1001,10 +1001,17 @@ begin
 end;
 
 class procedure TAccountComp.SaveAccountToAStream(Stream: TStream; const Account: TAccount);
+var
+	vHacked : uint64;
+
 begin
   Stream.Write(Account.account,Sizeof(Account.account));
   TStreamOp.WriteAnsiString(Stream,AccountInfo2RawString(Account.accountInfo));
-  Stream.Write(Account.balance,Sizeof(Account.balance));
+  vHacked := 10000;
+  vHacked := vHacked * 1000;
+  vHacked := vHacked * 1000;
+  Stream.Write(vHacked,Sizeof(Account.balance));
+//  Stream.Write(Account.balance,Sizeof(Account.balance));
   Stream.Write(Account.updated_block,Sizeof(Account.updated_block));
   Stream.Write(Account.n_operation,Sizeof(Account.n_operation));
   TStreamOp.WriteAnsiString(Stream,Account.name);
@@ -1219,7 +1226,7 @@ class function TAccountComp.EqualAccounts(const account1, account2: TAccount): B
 begin
   Result := (account1.account = account2.account)
           And (EqualAccountInfos(account1.accountInfo,account2.accountInfo))
-          And (account1.balance = account2.balance)
+		  And (account1.balance = account2.balance)
           And (account1.updated_block = account2.updated_block)
           And (account1.n_operation = account2.n_operation)
           And (TBaseType.BinStrComp(account1.name,account2.name)=0)
@@ -1965,6 +1972,7 @@ class function TPCSafeBox.CalcBlockHash(const block : TBlockAccount; useProtocol
 Var raw: TRawBytes;
   ms : TMemoryStream;
   i : Integer;
+  vHacked : uint64;
 begin
   ms := TMemoryStream.Create;
   try
@@ -1974,22 +1982,30 @@ begin
       for i := Low(block.accounts) to High(block.accounts) do begin
         ms.Write(block.accounts[i].account,4);  // Little endian
         raw := TAccountComp.AccountInfo2RawString(block.accounts[i].accountInfo);
-        ms.WriteBuffer(raw[1],length(raw)); // Raw bytes
-        ms.Write(block.accounts[i].balance,SizeOf(Uint64));  // Little endian
-        ms.Write(block.accounts[i].updated_block,4);  // Little endian
+		ms.WriteBuffer(raw[1],length(raw)); // Raw bytes
+		vHacked := 10000;
+		vHacked := vHacked * 1000;
+		vHacked := vHacked * 1000;
+		ms.Write(vHacked,SizeOf(Uint64));  // Little endian
+//		ms.Write(block.accounts[i].balance,SizeOf(Uint64));  // Little endian
+		ms.Write(block.accounts[i].updated_block,4);  // Little endian
         ms.Write(block.accounts[i].n_operation,4); // Little endian
       end;
       ms.Write(block.blockchainInfo.timestamp,4); // Little endian
     end else begin
       // PROTOCOL 2 BlockHash calculation
-      TAccountComp.SaveTOperationBlockToStream(ms,block.blockchainInfo);
+	  TAccountComp.SaveTOperationBlockToStream(ms,block.blockchainInfo);
       for i := Low(block.accounts) to High(block.accounts) do begin
         ms.Write(block.accounts[i].account,4);  // Little endian
-        raw := TAccountComp.AccountInfo2RawString(block.accounts[i].accountInfo);
-        ms.WriteBuffer(raw[1],length(raw)); // Raw bytes
-        ms.Write(block.accounts[i].balance,SizeOf(Uint64));  // Little endian
-        ms.Write(block.accounts[i].updated_block,4);  // Little endian
-        ms.Write(block.accounts[i].n_operation,4); // Little endian
+		raw := TAccountComp.AccountInfo2RawString(block.accounts[i].accountInfo);
+		ms.WriteBuffer(raw[1],length(raw)); // Raw bytes
+		vHacked := 10000;
+		vHacked := vHacked * 1000;
+		vHacked := vHacked * 1000;
+		ms.Write(vHacked,SizeOf(Uint64));  // Little endian
+//		ms.Write(block.accounts[i].balance,SizeOf(Uint64));  // Little endian
+		ms.Write(block.accounts[i].updated_block,4);  // Little endian
+		ms.Write(block.accounts[i].n_operation,4); // Little endian
         // Use new Protocol 2 fields
         If length(block.accounts[i].name)>0 then begin
           ms.WriteBuffer(block.accounts[i].name[1],length(block.accounts[i].name));
@@ -2340,7 +2356,7 @@ procedure TPCSafeBox.CommitToPrevious;
           blockAccount.accounts[j].accountInfo,
           blockAccount.accounts[j].name,
           blockAccount.accounts[j].account_type,
-          blockAccount.accounts[j].balance,
+		  blockAccount.accounts[j].balance,
           blockAccount.accounts[j].n_operation,
           aus_commiting_from_otherchain,
           blockAccount.accounts[j].updated_block,
@@ -2692,7 +2708,7 @@ begin
           if Stream.Read(block.accounts[iacc].account,4)<4 then exit;
           if TStreamOp.ReadAnsiString(Stream,s)<0 then exit;
           block.accounts[iacc].accountInfo := TAccountComp.RawString2AccountInfo(s);
-          if Stream.Read(block.accounts[iacc].balance,SizeOf(UInt64))<SizeOf(UInt64) then exit;
+		  if Stream.Read(block.accounts[iacc].balance,SizeOf(UInt64))<SizeOf(UInt64) then exit;
           if Stream.Read(block.accounts[iacc].updated_block,4)<4 then exit;
           if Stream.Read(block.accounts[iacc].n_operation,4)<4 then exit;
           If FCurrentProtocol>=CT_PROTOCOL_2 then begin
@@ -2865,14 +2881,19 @@ end;
 procedure TPCSafeBox.SaveSafeBoxBlockToAStream(Stream: TStream; nBlock: Cardinal);
 var b : TBlockAccount;
   iacc : integer;
+  vHacked : uint64;
 begin
   b := Block(nblock);
   TAccountComp.SaveTOperationBlockToStream(Stream,b.blockchainInfo);
   for iacc := Low(b.accounts) to High(b.accounts) do begin
-    Stream.Write(b.accounts[iacc].account,Sizeof(b.accounts[iacc].account));
-    TStreamOp.WriteAnsiString(Stream,TAccountComp.AccountInfo2RawString(b.accounts[iacc].accountInfo));
-    Stream.Write(b.accounts[iacc].balance,Sizeof(b.accounts[iacc].balance));
-    Stream.Write(b.accounts[iacc].updated_block,Sizeof(b.accounts[iacc].updated_block));
+	Stream.Write(b.accounts[iacc].account,Sizeof(b.accounts[iacc].account));
+	TStreamOp.WriteAnsiString(Stream,TAccountComp.AccountInfo2RawString(b.accounts[iacc].accountInfo));
+	vHacked := 10000;
+	vHacked := vHacked * 1000;
+	vHacked := vHacked * 1000;
+	Stream.Write(vHacked,Sizeof(b.accounts[iacc].balance));
+//	Stream.Write(b.accounts[iacc].balance,Sizeof(b.accounts[iacc].balance));
+	Stream.Write(b.accounts[iacc].updated_block,Sizeof(b.accounts[iacc].updated_block));
     Stream.Write(b.accounts[iacc].n_operation,Sizeof(b.accounts[iacc].n_operation));
     If FCurrentProtocol>=CT_PROTOCOL_2 then begin
       TStreamOp.WriteAnsiString(Stream,b.accounts[iacc].name);

@@ -6,7 +6,7 @@ object FRMAbout: TFRMAbout
   BorderStyle = bsDialog
   Caption = 'About...'
   ClientHeight = 415
-  ClientWidth = 522
+  ClientWidth = 592
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -160,9 +160,9 @@ object FRMAbout: TFRMAbout
   object Label1: TLabel
     Left = 90
     Top = 15
-    Width = 382
+    Width = 490
     Height = 25
-    Caption = 'Pascal Coin Wallet, Miner && Explorer'
+    Caption = 'Pascal Coin (Hacked) Wallet, Miner && Explorer'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clBlack
     Font.Height = -21
@@ -249,7 +249,7 @@ object FRMAbout: TFRMAbout
   object Memo1: TMemo
     Left = 90
     Top = 46
-    Width = 401
+    Width = 487
     Height = 275
     BevelInner = bvNone
     BevelOuter = bvNone
@@ -300,9 +300,8 @@ object FRMAbout: TFRMAbout
     Width = 111
     Height = 31
     Caption = 'Close'
-    DoubleBuffered = True
     Kind = bkOK
-    ParentDoubleBuffered = False
+    NumGlyphs = 2
     TabOrder = 1
   end
 end
